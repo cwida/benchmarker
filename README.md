@@ -235,3 +235,12 @@ if you would like to run a custom query, you have to see the `duckdb` implementa
 ```
 For `TPC-H`, the data is also generated and stored under `output/data/tpch/`. To generate data for your custom query,
 look at the tpch.py file in the `config/benchmark` directory and adjust it for your needs.
+
+## Evaluation
+Aggregated and raw results of the experiment are stored in the `_output/results/<experiment_name>/<timestamp>/` directory.
+It also contains a `Summary.md` file that contains the aggregated results and plots for the experiment and some 
+basic plots.
+The raw data of each run is stored in the `output/runs/<experiment_name>/<timestamp>/` directory.
+
+### Example Plot: Runtime per System and Query
+![System](docs/system_grouped.png)
