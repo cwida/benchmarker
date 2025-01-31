@@ -83,7 +83,7 @@ def run_experiment_parallel(experiments: List[Experiment], settings: RunSettings
 
 
 def run_experiment_sequential(experiments: List[Experiment]):
-    for (index, experiment) in enumerate(experiments):
+    for (index, experiment) in tqdm(enumerate(experiments), desc="Running experiments", position=0, leave=True):
         run_experiment(experiment, 0)
 
 def run_experiment(experiment: Experiment, thread_index: int):
@@ -117,6 +117,8 @@ def run_experiment(experiment: Experiment, thread_index: int):
 
         if status != 'success':
             logger.error(f"Error in running {system['name']}-{system['version']}")
+            # log the run script
+            logger.error(script)
             sleep(0.2)  # wait for process to finish to release db locks
             if status == 'crash' or status == 'timeout':  # if timeout or crash, break
                 break

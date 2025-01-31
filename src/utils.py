@@ -83,8 +83,6 @@ def get_exeriment_runs_path(experiment: Experiment) -> str:
         os.makedirs(path)
     return path
 
-import base64
-
 def get_experiment_file_name(experiment: dict) -> str:
     # hash the name to avoid long names, add the timestamp to avoid overwriting
 

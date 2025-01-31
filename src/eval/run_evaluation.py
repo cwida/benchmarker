@@ -53,7 +53,6 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
     # Step 1: Fetch initial data
     from_query = f"FROM intermediate WHERE run_name = '{run_name}' AND run_date = '{run_date}'"
     df = con.execute(f"SELECT * {from_query}").fetchdf()
-    print(f"Query executed: SELECT * {from_query}")
 
     # Step 2: Save initial data to CSV
     path = os.path.join(RESULTS_PATH, run_name, run_date)
@@ -113,7 +112,6 @@ def plot_aggregation(group_column: str, con: duckdb.DuckDBPyConnection, from_que
     """
 
     df_aggregated = con.execute(aggregated_query).fetchdf()
-    print(f"Query executed: {aggregated_query}")
 
     number_of_groups = len(df_aggregated)
     width_per_group = 0.6
@@ -131,11 +129,12 @@ def plot_aggregation(group_column: str, con: duckdb.DuckDBPyConnection, from_que
         #   - rows are query_index
         #   - columns are group_column_string
         #   - values are avg_runtime
+        # keep the order of the groups as they are in the original DataFrame
         df_pivot = df_aggregated.pivot(
             index='query_index',
             columns='group_column_string',
             values='avg_runtime'
-        )
+        ).reindex(columns=df_aggregated['group_column_string'].unique())
 
         x = np.arange(len(df_pivot.index))  # the label locations (one per query_index)
         # Dynamically size the bar width based on the number of groups:
