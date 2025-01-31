@@ -1,9 +1,10 @@
-import logging
 import os
 import sys
 
+import logging
 import psutil
 
+from src.logger import get_logger
 from src.models import System, SystemBuildConfig
 from src.utils import get_system_path, get_tmp_path
 
@@ -14,6 +15,7 @@ import os
 import subprocess
 from typing import Literal, Union, List
 
+logger = get_logger(__name__)
 
 def build_systems(systems: Union[System, List[System]]):
     if isinstance(systems, list):
@@ -27,10 +29,10 @@ def clone_repo(repository_url: str, path: str):
     clone_command = f'git clone "{repository_url}" "{path}"'
 
     if not os.path.exists(path):
-        logging.info('Directory does not exist yet, cloning repo')
+        logger.info('Directory does not exist yet, cloning repo')
         os.system(clone_command)
     else:
-        logging.info('Directory already exists, fetching the latest changes')
+        logger.info('Directory already exists, fetching the latest changes')
         # get path before changing directory
         path_before = os.getcwd()
         # perform a pull
@@ -43,38 +45,38 @@ def clone_repo_and_checkout_commit(github_url: str, version_dir: str):
 
     # if version dir is empty, remove it
     if os.path.exists(version_dir) and len(os.listdir(version_dir)) == 0:
-        logging.warning(f'Empty directory found at {version_dir} -> removing it')
+        logger.warning(f'Empty directory found at {version_dir} -> removing it')
         os.rmdir(version_dir)
 
-    logging.info(f'Getting source code from {github_url} to {version_dir}')
+    logger.info(f'Getting source code from {github_url} to {version_dir}')
     if '/commit/' in github_url:
 
-        logging.info('The url points to a commit, checking out the commit')
+        logger.info('The url points to a commit, checking out the commit')
         splitted = github_url.split('/commit/')
         repo = splitted[0] + '.git'
         commit = splitted[1]
 
         clone_repo(repo, version_dir)
 
-        logging.info(f'Checking out commit: {commit}')
+        logger.info(f'Checking out commit: {commit}')
         checkout_command = f'git checkout {commit}'
         os.system(checkout_command)
 
     #'github_commit_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker-and-collision-bit'
     elif '/tree/' in github_url:
 
-        logging.info('The url points to a branch, checking out the branch')
+        logger.info('The url points to a branch, checking out the branch')
         splitted = github_url.split('/tree/')
         repo = splitted[0] + '.git'
         branch = splitted[1]
 
         clone_repo(repo, version_dir)
 
-        logging.info(f'Checking out branch: {branch}')
+        logger.info(f'Checking out branch: {branch}')
         checkout_command = f'git checkout "{branch}"'
         os.system(checkout_command)
     else:
-        logging.info('The url points to a repository, cloning the repository')
+        logger.info('The url points to a repository, cloning the repository')
         clone_repo(github_url, version_dir)
 
 
@@ -85,7 +87,7 @@ def get_system_identifier(system: System) -> str:
 def build_system_if_necessary(system: System):
 
     if ('build_config' not in system) or (system['build_config'] is None):
-        logging.info(f'No build config found for system {system["name"]} {system["version"]} -> skipping build')
+        logger.info(f'No build config found for system {system["name"]} {system["version"]} -> skipping build')
         return
 
     build_config: SystemBuildConfig = system['build_config']
@@ -98,10 +100,10 @@ def build_system_if_necessary(system: System):
         os.chdir(repo_dir)
 
     build_command = build_config['build_command']
+    logger.info(f'Building system {system["name"]} {system["version"]} with command: {build_command}')
 
-    # check if logging level is info or above
-    if logging.getLogger().getEffectiveLevel() <= logging.INFO:
-        logging.info(f'Building system {system["name"]} {system["version"]} with command: {build_command}')
+    # check if logger level is info or above
+    if logger.getEffectiveLevel() <= logging.INFO:
         os.system(build_command)
     else:
         silent_command = f'{build_command} > /dev/null 2>&1'
@@ -118,10 +120,10 @@ Status = Literal['success', 'timeout', 'crash']
 
 
 def run_command_with_timeout(command: str, timeout: float, env_vars: dict = None) -> Status:
-    logging.info(f'Running command: {command} with timeout {timeout}')
-    logging.info(f'For running the command we have the following environment variables: {env_vars}')
+    logger.info(f'Running command: {command} with timeout {timeout}')
+    logger.info(f'For running the command we have the following environment variables: {env_vars}')
 
-    verbose = logging.getLogger().getEffectiveLevel() <= logging.INFO
+    verbose = logger.getEffectiveLevel() <= logging.INFO
     if not verbose:
         command += ' > /dev/null 2>&1'
     if verbose:
@@ -133,18 +135,18 @@ def run_command_with_timeout(command: str, timeout: float, env_vars: dict = None
         return_code = proc.wait(timeout=timeout)
         if return_code == 0:
             return 'success'
-        logging.error(f'Command {command} failed with return code {return_code}')
+        logger.error(f'Command {command} failed with return code {return_code}')
 
     except subprocess.TimeoutExpired:
         kill(proc.pid)
-        logging.error(f'Command {command} timed out after {timeout} seconds')
+        logger.error(f'Command {command} timed out after {timeout} seconds')
         return 'timeout'
 
     except subprocess.CalledProcessError as e:
-        logging.error(f'Command {command} failed with error: {e}')
+        logger.error(f'Command {command} failed with error: {e}')
         return 'crash'
     except Exception as e:
-        logging.error(f'Command {command} failed with error: {e}')
+        logger.error(f'Command {command} failed with error: {e}')
         return 'crash'
 
     return 'crash'

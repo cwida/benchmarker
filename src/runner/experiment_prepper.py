@@ -1,7 +1,9 @@
-import logging
+from datetime import datetime
 import os
 import sys
 from typing import List, Tuple
+
+from src.logger import get_logger
 
 root_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.insert(0, root_directory)
@@ -9,7 +11,7 @@ sys.path.insert(0, root_directory)
 from src.models import RunConfig, Experiment, run_settings_fill_defaults, Benchmark, System, SystemSettings, \
     RunSettingsInternal, ExperimentResult, DataSet, Query
 
-
+logger = get_logger(__name__)
 
 def create_experiments_from_config(
         config: RunConfig,
@@ -25,24 +27,30 @@ def create_experiments_from_config(
     max_threads = max([s['n_threads'] for s in system_settings])
 
     cores_required = run_settings['n_parallel'] * max_threads
-    logging.info(f"Number of cores required: {cores_required}")
+    logger.info(f"Number of cores required: {cores_required}")
 
     number_of_cores = os.cpu_count()
-    logging.info(f"Number of cores available: {number_of_cores}")
+    logger.info(f"Number of cores available: {number_of_cores}")
 
     if cores_required > number_of_cores:
-        logging.warning(f"Number of cores required ({cores_required}) is greater than the number of cores available ({number_of_cores})")
-
+        logger.warning(f"Number of cores required ({cores_required}) is greater than the number of cores available ({number_of_cores})")
+    else:
+        logger.info(f"Number of cores required ({cores_required}) is less than the number of cores available ({number_of_cores})")
     index = 0
+
+    # get the current run date and time so we can use it  as folder name
+    run_date = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
     for benchmark in benchmarks:
-        for system in systems:
-            for system_setting in system_settings:
-                for query in benchmark['queries']:
-                    for data in benchmark['datasets']:
+        for query in benchmark['queries']:
+            for data in benchmark['datasets']:
+                for system in systems:
+                    for system_setting in system_settings:
                         name = benchmark['name'] + '-experiment-' + str(index)
                         experiment: Experiment = {
                             'name': name,
                             'run_name': config['name'],
+                            'run_date': run_date,
                             'data': data,
                             'settings': run_settings,
                             'query': query,
@@ -50,6 +58,7 @@ def create_experiments_from_config(
                             'system': system
                         }
                         experiments.append(experiment)
+                        index += 1
 
     offset = run_settings['offset']
     if offset is None:
@@ -59,6 +68,8 @@ def create_experiments_from_config(
         experiments = experiments[offset:offset + max_n_experiments]
     else:
         experiments = experiments[offset:]
+
+    logger.info(f"Created {len(experiments)} experiments from {len(benchmarks)} benchmarks, {len(systems)} systems, and {len(system_settings)} system settings")
 
     return experiments, run_settings
 

@@ -1,6 +1,7 @@
 import os
 import sys
 
+from src.logger import get_logger
 from src.models import System
 from src.utils import get_tmp_path
 
@@ -10,6 +11,8 @@ sys.path.insert(0, root_directory)
 import json
 import os
 from typing import Optional, Tuple
+
+logger = get_logger(__name__)
 
 
 def get_profile_path_duckdb(thread: int) -> str:
@@ -22,9 +25,9 @@ def get_duckdb_profile_script(thread: int) -> str:
     return string
 
 
-def get_duckdb_runtime_and_cardinality(thread: int, mode: str) -> Optional[Tuple[float, int]]:
+def get_duckdb_runtime_and_cardinality(thread: int) -> Optional[Tuple[float, int]]:
     # load the json
-    json_path = get_profile_path_duckdb(thread, mode)
+    json_path = get_profile_path_duckdb(thread)
 
     # if the query crashed, the file does not exist
     if not os.path.exists(json_path):
@@ -55,80 +58,149 @@ def get_duckdb_runtime_and_cardinality(thread: int, mode: str) -> Optional[Tuple
     os.remove(json_path)
     return runtime, cardinality
 
+
 DUCK_DB_MAIN: System = {
     'version': 'v1.0.0',
     'name': 'duckdb',
-    'github_commit_url': 'https://github.com/duckdb/duckdb/commit/1f98600c2cf8722a6d2f2d805bb4af5e701319fc',
-    'build_command': 'GEN=ninja BUILD_HTTPFS=1 BUILD_TPCH=1 BUILD_TPCDS=1 make',
-    'run_file_relative_to_build': True,
-    'run_file': 'build/release/duckdb <',
+    'build_config': {
+        'build_command': 'GEN=ninja BUILD_HTTPFS=1 BUILD_TPCH=1 BUILD_TPCDS=1 make',
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/duckdb/duckdb/commit/1f98600c2cf8722a6d2f2d805bb4af5e701319fc',
+        },
+    },
+    'run_config': {
+        'run_file': 'build/release/duckdb <',
+        'run_file_relative_to_build': True,
+    },
     'setup_script': '',
-    'get_start_profiler_command': get_duckdb_profile_script,
     'set_threads_command': lambda n_threads: f"PRAGMA threads = {n_threads};",
+    'get_start_profiler_command': get_duckdb_profile_script,
     'get_metrics': get_duckdb_runtime_and_cardinality,
 }
 
 DUCK_DB_FACT_INTERSECTION_METRICS: System = {
     **DUCK_DB_MAIN,
     'version': 'fact-intersection',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/commit/446b25a1af4a39cede073f7f3872b49145ec2cd0',
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/446b25a1af4a39cede073f7f3872b49145ec2cd0',
+        },
+    },
 }
 
 DUCK_DB_FACT_INTERSECTION_NO_METRICS: System = {
     **DUCK_DB_MAIN,
     'version': 'fact-intersection-no-metrics',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/commit/446b25a1af4a39cede073f7f3872b49145ec2cd0'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/446b25a1af4a39cede073f7f3872b49145ec2cd0'
+        },
+    },
 }
 
 DUCK_DB_LP_JOIN_BASELINE: System = {
     **DUCK_DB_MAIN,
     'version': 'baseline',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/commit/fd2e59672e02d49278e9491ed1bd8fa5d1cdb0a7'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/fd2e59672e02d49278e9491ed1bd8fa5d1cdb0a7'
+        },
+    },
 }
 
 DUCK_DB_LP_JOIN: System = {
     **DUCK_DB_MAIN,
     'version': 'lp-join',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/commit/e30f8270594e6fde06ca87b2193ad31d91db047e'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/e30f8270594e6fde06ca87b2193ad31d91db047e'
+        },
+    },
 }
 
 DUCK_DB_LP_JOIN_NO_SALT: System = {
     **DUCK_DB_MAIN,
     'version': 'lp-join-no-salt',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/commit/442274812bda9504b697524e58f796d182612838'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/442274812bda9504b697524e58f796d182612838'
+        },
+    },
 }
 
 DUCK_DB_JOIN_OPTIMIZATION_BASELINE: System = {
     **DUCK_DB_MAIN,
     'version': 'join-optimization-baseline',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/commit/4ba2e66277a7576f58318c1aac112faa67c47b11'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/4ba2e66277a7576f58318c1aac112faa67c47b11'
+        },
+    },
 }
 
 DUCK_DB_JOIN_OPTIMIZATION_HASH_MARKER_AND_COLLISION_BIT: System = {
     **DUCK_DB_MAIN,
     'version': 'join-optimization-hash-marker-and-collision-bit',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker-and-collision-bit'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker-and-collision-bit'
+        },
+    },
 }
 
 DUCK_DB_JOIN_OPTIMIZATION_HASH_MARKER: System = {
     **DUCK_DB_MAIN,
     'version': 'join-optimization-hash-marker',
-    'github_commit_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker'
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker'
+        },
+    },
 }
-
 
 DUCK_DB_NIGHTLY: System = {
     **DUCK_DB_MAIN,
     'version': 'nightly',
-    'github_commit_url': None,
-    'run_file_relative_to_build': False,
-    'run_file': '/Users/paul/.local/bin/duckman run nightly <',
+    'build_config': None,
+    'run_config': {
+        'run_file_relative_to_build': False,
+        'run_file': '/Users/paul/.local/bin/duckman run nightly <',
+    }
+}
+
+DUCK_DB_V100: System = {
+    **DUCK_DB_MAIN,
+    'version': 'v1.0.0',
+    'build_config': None,
+    'run_config': {
+        'run_file_relative_to_build': False,
+        'run_file': '/Users/paul/.local/bin/duckman run 1.0.0 <',
+    }
 }
 
 DUCK_DB_V113: System = {
     **DUCK_DB_MAIN,
     'version': 'v1.1.3',
-    'github_commit_url': None,
-    'run_file_relative_to_build': False,
-    'run_file': '/Users/paul/.local/bin/duckman run 1.1.3 <',
+    'build_config': None,
+    'run_config': {
+        'run_file_relative_to_build': False,
+        'run_file': '/Users/paul/.local/bin/duckman run 1.1.3 <',
+    }
 }

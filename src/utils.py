@@ -22,29 +22,20 @@ SEED = 42
 
 # use the DATA_PATH environment variable to get the path to the data directory
 ROOT_DIR_PATH = os.getenv('EXPERIMENTS_DIR_PATH', find_project_root(__file__))
-DATA_PATH = os.path.join(ROOT_DIR_PATH, 'data')
-SYSTEMS_PATH = os.path.join(ROOT_DIR_PATH, 'systems')
-OUTPUT_PATH = os.path.join(ROOT_DIR_PATH, 'output')
-TMP_PATH = os.path.join(OUTPUT_PATH, 'tmp')
+_OUTPUT_DIR_PATH = os.path.join(ROOT_DIR_PATH, '_output')
+DATA_PATH = os.path.join(_OUTPUT_DIR_PATH, 'data')
+SYSTEMS_PATH = os.path.join(_OUTPUT_DIR_PATH, 'systems')
+EXPERIMENT_RUNS_PATH = os.path.join(_OUTPUT_DIR_PATH, 'runs')
+RESULTS_PATH = os.path.join(_OUTPUT_DIR_PATH, 'results')
+TMP_PATH = os.path.join(_OUTPUT_DIR_PATH, 'tmp')
 
-DUCKDB_ADAPTIVE_PARAMETERS_PATH = os.path.join(TMP_PATH, 'duckdb-adaptive-parameters')
-
-AWS_BUCKETS_LOCAL_PATH = os.path.join(DATA_PATH, 'aws-buckets')
-TPCH_LOCAL_PATH = os.path.join(DATA_PATH, 'tpch')
-MICRO_LOCAL_PATH = os.path.join(DATA_PATH, 'micro')
-
-AWS_BUCKETS_PARQUET_PATH = os.path.join(DATA_PATH, 'aws-buckets-parquet')
 
 dirs = [
     DATA_PATH,
+    _OUTPUT_DIR_PATH,
     SYSTEMS_PATH,
-    OUTPUT_PATH,
+    EXPERIMENT_RUNS_PATH,
     TMP_PATH,
-    DUCKDB_ADAPTIVE_PARAMETERS_PATH,
-    AWS_BUCKETS_LOCAL_PATH,
-    TPCH_LOCAL_PATH,
-    MICRO_LOCAL_PATH,
-    AWS_BUCKETS_PARQUET_PATH
 ]
 
 DESCRIPTION_LENGTH = 25
@@ -62,11 +53,6 @@ for dir_name in dirs:
 def get_tmp_path(path: str) -> str:
     return os.path.join(TMP_PATH, path)
 
-
-def get_bucket_path(bucket_name: str) -> str:
-    return os.path.join(AWS_BUCKETS_LOCAL_PATH, bucket_name)
-
-
 def get_snb_path(sf: int) -> str:
     return os.path.join(DATA_PATH, f'SNB{sf}-projected|')
 
@@ -75,31 +61,24 @@ def get_snb_parquet_path(sf: int) -> str:
 
 
 def get_data_path(path: str) -> str:
-    return os.path.join(DATA_PATH, path)
+    path = os.path.join(DATA_PATH, path)
+    parent = os.path.dirname(path)
+    if not os.path.exists(parent):
+        os.makedirs(parent)
+    return path
 
 
 def get_system_output_path(system: System) -> str:
     path = system['name'] + '-' + system['version']
-    return os.path.join(OUTPUT_PATH, path)
-
-
-def get_adaptive_parameters_path(system: System, thread_index: int) -> str:
-    thread_dir = system['name'] + '-' + system['version'] + '-thread-' + str(thread_index)
-    path = os.path.join(DUCKDB_ADAPTIVE_PARAMETERS_PATH, thread_dir)
-
-    if not os.path.exists(path):
-        os.makedirs(path)
-
-    return path
-
+    return os.path.join(EXPERIMENT_RUNS_PATH, path)
 
 def get_system_path(system: System) -> str:
     path = system['name'] + '-' + system['version']
     return os.path.join(SYSTEMS_PATH, path)
 
 
-def get_results_path(experiment: Experiment) -> str:
-    path = os.path.join(OUTPUT_PATH, 'result', experiment['run_name'])
+def get_exeriment_runs_path(experiment: Experiment) -> str:
+    path = os.path.join(EXPERIMENT_RUNS_PATH, experiment['run_name'])
     if not os.path.exists(path):
         os.makedirs(path)
     return path
@@ -108,15 +87,14 @@ import base64
 
 def get_experiment_file_name(experiment: dict) -> str:
     # hash the name to avoid long names, add the timestamp to avoid overwriting
-    name_hash = hash(experiment['name'])
-    name_hash_b32 = base64.b32encode(str(name_hash).encode()).decode()
-    name_hashed = f'{name_hash_b32}'
+
+    name_hashed = f'{experiment["name"]}'
     return name_hashed
 
 def get_experiment_output_path_json(experiment: Experiment) -> str:
-    result_dir = get_results_path(experiment)
+    result_dir = get_exeriment_runs_path(experiment)
 
-    json_dir = os.path.join(result_dir, 'json')
+    json_dir = os.path.join(result_dir, experiment['run_date'])
 
     if not os.path.exists(json_dir):
         os.makedirs(json_dir)
@@ -128,7 +106,7 @@ def get_experiment_output_path_json(experiment: Experiment) -> str:
 
 
 def get_experiment_output_path_csv(experiment: Experiment) -> str:
-    result_dir = get_results_path(experiment)
+    result_dir = get_exeriment_runs_path(experiment)
 
     csv_dir = os.path.join(result_dir, 'csv')
 
@@ -141,7 +119,7 @@ def get_experiment_output_path_csv(experiment: Experiment) -> str:
 
 
 def get_plot_path(overall_name: str, plot_type: str, plot_name: str) -> str:
-    path = os.path.join(OUTPUT_PATH, 'result', overall_name)
+    path = os.path.join(EXPERIMENT_RUNS_PATH, 'result', overall_name)
     if not os.path.exists(path):
         os.makedirs(path)
 

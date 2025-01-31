@@ -50,9 +50,8 @@ class System(TypedDict):
     version: str
     build_config: Optional[SystemBuildConfig]
     run_config: SystemRunConfig
-    set_threads_command: Callable[[int], str]  # takes the number of threads as argument
-
     setup_script: str
+    set_threads_command: Callable[[int], str]  # takes the number of threads as argument
     get_start_profiler_command: GetStartProfilerCommand
     get_metrics: GetMetricsFunction  # callback function that returns a float, gets thread index as argument
 
@@ -65,6 +64,7 @@ class DataSet(TypedDict):
 
 class Query(TypedDict):
     name: str
+    index: int
     run_script: Script
 
 
@@ -112,7 +112,7 @@ class Benchmark(TypedDict):
     datasets: List[DataSet]
     queries: List[Query]
 
-class RunConfig(TypedDict):
+class RunConfig(TypedDict, total=False):
     name: str
     run_settings: RunSettings
 
@@ -121,13 +121,11 @@ class RunConfig(TypedDict):
     systems: Union[System, List[System]]
     benchmarks: Union[Benchmark, List[Benchmark]]
 
-    # levels from the logging module
-    logging_level: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
-
 # consists of one system with one setting and one benchmark
 class Experiment(TypedDict):
     name: str
     run_name: str
+    run_date: str
     data: DataSet
     settings: RunSettingsInternal
     query: Query
