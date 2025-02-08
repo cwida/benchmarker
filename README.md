@@ -244,3 +244,12 @@ The raw data of each run is stored in the `output/runs/<experiment_name>/<timest
 
 ### Example Plot: Runtime per System and Query
 ![System](docs/system_grouped.png)
+
+## Evaluation
+Aggregated and raw results of the experiment are stored in the `_output/results/<experiment_name>/<timestamp>/` directory.
+It also contains a `Summary.md` file that contains the aggregated results and plots for the experiment and some 
+basic plots.
+The raw data of each run is stored in the `output/runs/<experiment_name>/<timestamp>/` directory.
+
+### Example Plot: Runtime per System and Query
+![System](docs/system_grouped.png)
