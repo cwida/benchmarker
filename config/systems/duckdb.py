@@ -185,6 +185,20 @@ DUCK_DB_NIGHTLY: System = {
     }
 }
 
+DUCK_DB_NIGHTLY_BUILD_LOCALLY: System = {
+    **DUCK_DB_MAIN,
+    'version': 'nightly-build-locally',
+    'build_config': None,
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/duckdb/duckdb'
+        },
+    },
+}
+
+
 DUCK_DB_V100: System = {
     **DUCK_DB_MAIN,
     'version': 'v1.0.0',
@@ -203,4 +217,32 @@ DUCK_DB_V113: System = {
         'run_file_relative_to_build': False,
         'run_file': '/Users/paul/.local/bin/duckman run 1.1.3 <',
     }
+}
+
+
+DUCK_DB_WITHOUT_ATOMICS: System = {
+    **DUCK_DB_MAIN,
+    'version': 'without-atomics',
+    'build_config': None,
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/atomics-test'
+        },
+    },
+}
+
+
+DUCK_DB_PARTITIONED: System = {
+    **DUCK_DB_MAIN,
+    'version': 'partitioned-ht',
+    'build_config': None,
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/partioning-non-atomic-v2'
+        },
+    },
 }
