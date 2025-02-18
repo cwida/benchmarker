@@ -2,6 +2,19 @@
 
 This is a simple benchmarking tool for SQL-based systems.
 
+## Installation
+
+This project uses poetry for dependency management. First, install poetry:
+```bash
+pip install poetry
+```
+Then, clone the repository and install the dependencies:
+```bash 
+git clone https://github.com/cwida/benchmarker.git
+cd benchmarker
+poetry install
+```
+
 ## Experiment Configuration
 
 You can create an experiment by adding a new python_script in the `experiments` directory. For an easy start,
