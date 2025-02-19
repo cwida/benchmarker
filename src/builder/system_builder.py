@@ -25,7 +25,7 @@ def build_systems(systems: Union[System, List[System]]):
         build_system_if_necessary(systems)
 
 
-def clone_repo(repository_url: str, path: str):
+def clone_or_update_repo(repository_url: str, path: str):
     clone_command = f'git clone "{repository_url}" "{path}"'
 
     if not os.path.exists(path):
@@ -38,6 +38,7 @@ def clone_repo(repository_url: str, path: str):
         # perform a pull
         os.chdir(path)
         os.system('git fetch')
+        os.system('git pull')
         # change back to the original directory
         os.chdir(path_before)
 
@@ -56,11 +57,15 @@ def clone_repo_and_checkout_commit(github_url: str, version_dir: str):
         repo = splitted[0] + '.git'
         commit = splitted[1]
 
-        clone_repo(repo, version_dir)
+        clone_or_update_repo(repo, version_dir)
 
+        path_before = os.getcwd()
+
+        os.chdir(version_dir)
         logger.info(f'Checking out commit: {commit}')
         checkout_command = f'git checkout {commit}'
         os.system(checkout_command)
+        os.chdir(path_before)
 
     #'github_commit_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker-and-collision-bit'
     elif '/tree/' in github_url:
@@ -70,14 +75,20 @@ def clone_repo_and_checkout_commit(github_url: str, version_dir: str):
         repo = splitted[0] + '.git'
         branch = splitted[1]
 
-        clone_repo(repo, version_dir)
-
+        clone_or_update_repo(repo, version_dir)
+        path_before = os.getcwd()
+        os.chdir(version_dir)
         logger.info(f'Checking out branch: {branch}')
         checkout_command = f'git checkout "{branch}"'
+
         os.system(checkout_command)
+        os.system('git fetch')
+        os.system('git pull')
+
+        os.chdir(path_before)
     else:
         logger.info('The url points to a repository, cloning the repository')
-        clone_repo(github_url, version_dir)
+        clone_or_update_repo(github_url, version_dir)
 
 
 def get_system_identifier(system: System) -> str:
