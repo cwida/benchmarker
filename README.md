@@ -14,6 +14,10 @@ git clone https://github.com/cwida/benchmarker.git
 cd benchmarker
 poetry install
 ```
+You can also directly run the project with poetry:
+```bash
+poetry run python experiments/tpcds_nightly_experiment.py
+```
 
 ## Experiment Configuration
 

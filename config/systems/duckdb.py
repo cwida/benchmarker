@@ -73,7 +73,7 @@ DUCK_DB_MAIN: System = {
         'run_file': 'build/release/duckdb <',
         'run_file_relative_to_build': True,
     },
-    'setup_script': '',
+    'setup_script': 'PRAGMA disable_progress_bar;',
     'set_threads_command': lambda n_threads: f"PRAGMA threads = {n_threads};",
     'get_start_profiler_command': get_duckdb_profile_script,
     'get_metrics': get_duckdb_runtime_and_cardinality,
