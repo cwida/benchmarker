@@ -6,7 +6,7 @@ sys.path.insert(0, root_directory)
 
 
 from config.benchmark.tpch import get_tpch_benchmark
-from config.systems.duckdb import DUCK_DB_PARTITIONED, DUCK_DB_NIGHTLY_BUILD_LOCALLY
+from config.systems.duckdb import DUCK_DB_PARTITIONED, DUCK_DB_NIGHTLY_BUILD_LOCALLY, DUCK_DB_PARTITIONED_BASELINE
 from src.models import RunConfig
 from src.runner.experiment_runner import run
 
@@ -20,11 +20,9 @@ def main():
             'n_runs': 4,
         },
         'system_settings': [
-            {'n_threads': 1},
             {'n_threads': 2},
-            {'n_threads': 10},
         ],
-        'systems': [DUCK_DB_NIGHTLY_BUILD_LOCALLY, DUCK_DB_PARTITIONED],
+        'systems': [DUCK_DB_PARTITIONED_BASELINE, DUCK_DB_PARTITIONED],
         'benchmarks': get_tpch_benchmark(sfs),
     }
     run(config)

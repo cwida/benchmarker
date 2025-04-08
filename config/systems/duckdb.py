@@ -246,3 +246,16 @@ DUCK_DB_PARTITIONED: System = {
         },
     },
 }
+
+DUCK_DB_PARTITIONED_BASELINE: System = {
+    **DUCK_DB_MAIN,
+    'version': 'partitioned-ht-baseline',
+    'build_config': None,
+    'build_config': {
+        **DUCK_DB_MAIN['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/increase-entries-per-task-for-parallel-zero'
+        },
+    },
+}
