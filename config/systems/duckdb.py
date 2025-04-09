@@ -59,7 +59,7 @@ def get_duckdb_runtime_and_cardinality(thread: int) -> Optional[Tuple[float, int
     return runtime, cardinality
 
 
-DUCK_DB_MAIN: System = {
+DUCK_DB_BUILD_100: System = {
     'version': 'v1.0.0',
     'name': 'duckdb',
     'build_config': {
@@ -80,10 +80,10 @@ DUCK_DB_MAIN: System = {
 }
 
 DUCK_DB_FACT_INTERSECTION_METRICS: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'fact-intersection',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/commit/446b25a1af4a39cede073f7f3872b49145ec2cd0',
@@ -92,10 +92,10 @@ DUCK_DB_FACT_INTERSECTION_METRICS: System = {
 }
 
 DUCK_DB_FACT_INTERSECTION_NO_METRICS: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'fact-intersection-no-metrics',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/commit/446b25a1af4a39cede073f7f3872b49145ec2cd0'
@@ -104,10 +104,10 @@ DUCK_DB_FACT_INTERSECTION_NO_METRICS: System = {
 }
 
 DUCK_DB_LP_JOIN_BASELINE: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'baseline',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/commit/fd2e59672e02d49278e9491ed1bd8fa5d1cdb0a7'
@@ -116,10 +116,10 @@ DUCK_DB_LP_JOIN_BASELINE: System = {
 }
 
 DUCK_DB_LP_JOIN: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'lp-join',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/commit/e30f8270594e6fde06ca87b2193ad31d91db047e'
@@ -128,10 +128,10 @@ DUCK_DB_LP_JOIN: System = {
 }
 
 DUCK_DB_LP_JOIN_NO_SALT: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'lp-join-no-salt',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/commit/442274812bda9504b697524e58f796d182612838'
@@ -140,10 +140,10 @@ DUCK_DB_LP_JOIN_NO_SALT: System = {
 }
 
 DUCK_DB_JOIN_OPTIMIZATION_BASELINE: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'join-optimization-baseline',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/commit/4ba2e66277a7576f58318c1aac112faa67c47b11'
@@ -152,10 +152,10 @@ DUCK_DB_JOIN_OPTIMIZATION_BASELINE: System = {
 }
 
 DUCK_DB_JOIN_OPTIMIZATION_HASH_MARKER_AND_COLLISION_BIT: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'join-optimization-hash-marker-and-collision-bit',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker-and-collision-bit'
@@ -164,10 +164,10 @@ DUCK_DB_JOIN_OPTIMIZATION_HASH_MARKER_AND_COLLISION_BIT: System = {
 }
 
 DUCK_DB_JOIN_OPTIMIZATION_HASH_MARKER: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'join-optimization-hash-marker',
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join-optimization/hash-marker'
@@ -176,7 +176,7 @@ DUCK_DB_JOIN_OPTIMIZATION_HASH_MARKER: System = {
 }
 
 DUCK_DB_NIGHTLY: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'nightly',
     'build_config': None,
     'run_config': {
@@ -186,11 +186,11 @@ DUCK_DB_NIGHTLY: System = {
 }
 
 DUCK_DB_NIGHTLY_BUILD_LOCALLY: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'nightly-build-locally',
     'build_config': None,
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/duckdb/duckdb'
@@ -200,7 +200,7 @@ DUCK_DB_NIGHTLY_BUILD_LOCALLY: System = {
 
 
 DUCK_DB_V100: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'v1.0.0',
     'build_config': None,
     'run_config': {
@@ -210,7 +210,7 @@ DUCK_DB_V100: System = {
 }
 
 DUCK_DB_V113: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'v1.1.3',
     'build_config': None,
     'run_config': {
@@ -221,11 +221,11 @@ DUCK_DB_V113: System = {
 
 
 DUCK_DB_WITHOUT_ATOMICS: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'without-atomics',
     'build_config': None,
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join/atomics-test'
@@ -235,11 +235,11 @@ DUCK_DB_WITHOUT_ATOMICS: System = {
 
 
 DUCK_DB_PARTITIONED: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'partitioned-ht',
     'build_config': None,
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join/partioning-non-atomic-v2'
@@ -248,14 +248,27 @@ DUCK_DB_PARTITIONED: System = {
 }
 
 DUCK_DB_PARTITIONED_BASELINE: System = {
-    **DUCK_DB_MAIN,
+    **DUCK_DB_BUILD_100,
     'version': 'partitioned-ht-baseline',
     'build_config': None,
     'build_config': {
-        **DUCK_DB_MAIN['build_config'],
+        **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join/increase-entries-per-task-for-parallel-zero'
+        },
+    },
+}
+
+DUCK_DB_OPTIONAL_PROBE_SEL: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'optional-probe-sel',
+    'build_config': None,
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/optional-probe-sel'
         },
     },
 }

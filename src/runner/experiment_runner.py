@@ -46,7 +46,14 @@ def run_experiment_parallel(experiments: List[Experiment], settings: RunSettings
     n_parallel = settings['n_parallel']
     experiment_queue = Queue()
     progress_lock = Lock()  # Lock for updating the tqdm bar safely
-    progress_bar = tqdm(total=len(experiments), desc="Running experiments", position=0, leave=True)
+
+    progress_bar = tqdm(
+        total=len(experiments),
+        desc="Running experiments",
+        leave=True,
+        dynamic_ncols=True,
+        file=sys.stdout,  # Sometimes helps in certain environments
+    )
 
     # Populate the queue with experiments
     for experiment in experiments:
