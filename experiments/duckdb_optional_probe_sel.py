@@ -12,7 +12,7 @@ from src.runner.experiment_runner import run
 
 
 def main():
-    sfs = [30]
+
     config: RunConfig = {
         'name': 'duckdb_optional_probe_sel_experiment',
         'run_settings': {
