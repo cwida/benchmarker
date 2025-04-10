@@ -5,8 +5,6 @@ import sys
 root_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.insert(0, root_directory)
 
-from config.benchmark.imdb import get_imdb_benchmark
-
 from config.benchmark.tpch import get_tpch_benchmark
 from config.systems.duckdb import DUCK_DB_NIGHTLY_BUILD_LOCALLY, DUCK_DB_OPTIONAL_PROBE_SEL
 from src.models import RunConfig
@@ -27,7 +25,7 @@ def main():
         ],
 
         'systems': [DUCK_DB_NIGHTLY_BUILD_LOCALLY, DUCK_DB_OPTIONAL_PROBE_SEL],
-        'benchmarks': [get_tpch_benchmark([10, 30])],
+        'benchmarks': [get_tpch_benchmark([10, 30 ])],
     }
     run(config)
 

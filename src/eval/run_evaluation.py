@@ -62,8 +62,9 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
     df.to_csv(os.path.join(path, 'run.csv'), index=False)
 
     system_plot_grouped = plot_aggregation('system', con, from_query, plots_path, per_query=True)
+    system_plot_grouped_data_config = plot_aggregation('system', con, from_query, plots_path, per_query=True, subplot_group='data_config')
+    system_plot_grouped_system_setting = plot_aggregation('system', con, from_query, plots_path, per_query=True, subplot_group='system_setting')
     system_plot = plot_aggregation('system', con, from_query, plots_path)
-
 
     system_setting_plot_grouped = plot_aggregation('system_setting', con, from_query, plots_path, per_query=True)
     system_setting_plot = plot_aggregation('system_name', con, from_query, plots_path)
@@ -73,12 +74,13 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
 
 
 
-
     # create little markdown file with embedded plots, we can create md images as ![name](path)
     md = f"""
 # {run_name} - {run_date}
-## Performance per System
-![System](plots/{os.path.basename(system_plot_grouped)})
+## Performance per System and Data Configuration
+![System](plots/{os.path.basename(system_plot_grouped_data_config)})
+## Performance per System and System Configuration
+![System](plots/{os.path.basename(system_plot_grouped_system_setting)})
 ## Performance per System Setting
 ![System Setting](plots/{os.path.basename(system_setting_plot_grouped)})
 ## Performance per Data Configuration
@@ -89,47 +91,133 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
         f.write(md)
 
 
-def plot_aggregation(group_column: str, con: duckdb.DuckDBPyConnection, from_query: str, path: str, per_query=False):
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import duckdb
+
+def plot_aggregation(group_column: str,
+                     con: duckdb.DuckDBPyConnection,
+                     from_query: str,
+                     path: str,
+                     per_query=False,
+                     subplot_group: str | None = None):
     """
     Plots average runtimes aggregated by either:
       - just the group_column if per_query=False
       - query_index * group_column if per_query=True (grouped bar plot)
+      - one subplot per unique value of subplot_group if provided
     """
-    # Step 4: Aggregated data query
-    # For per_query=True, we also bring in (query_index + 1) as query_index
 
-    # clear all figures before plotting
+    # clear any existing figures before we start
     plt.close('all')
 
+    # Build the query, optionally including query_index and subplot_group in SELECT, GROUP BY, ORDER BY
     aggregated_query = f"""
         SELECT 
             replace(CAST({group_column} AS STRING)[2:-2], '''', '') as group_column_string
             {', (query_index + 1) as query_index' if per_query else ''},
             AVG(min_runtime) as avg_runtime
+            {', replace(CAST(' + subplot_group + " AS STRING)[2:-2], '''', '') as " + subplot_group if subplot_group else ''} 
         {from_query}
-        GROUP BY {group_column} {', query_index' if per_query else ''}
-        ORDER BY {group_column} {', query_index' if per_query else ''};
+        GROUP BY {group_column} 
+                 {', query_index' if per_query else ''} 
+                 {(',' + subplot_group) if subplot_group else ''}
+        ORDER BY {group_column} 
+                 {', query_index' if per_query else ''};
     """
 
+    # Execute and fetch data into a pandas DataFrame
     df_aggregated = con.execute(aggregated_query).fetchdf()
 
-    number_of_groups = len(df_aggregated)
-    width_per_group = 0.6
-    plot_width = max(width_per_group * number_of_groups, 5)
-
-    # Create plot directory if it doesn't exist
+    # Ensure plot directory exists
     if not os.path.exists(path):
         os.makedirs(path)
 
-    if per_query:
-        # We want a grouped bar plot with query_index on the x-axis
-        # and each group_column_string as a separate bar in each group.
+    if subplot_group is None:
+        # Just create a single “main” plot
+        return create_plot(
+            df_aggregated,
+            group_column,
+            path,
+            per_query
+        )
+    else:
+        # We have subgroups to plot in separate subplots
+        unique_subgroups = df_aggregated[subplot_group].unique()
 
-        # Pivot the DataFrame so:
-        #   - rows are query_index
-        #   - columns are group_column_string
-        #   - values are avg_runtime
-        # keep the order of the groups as they are in the original DataFrame
+        width = get_plot_width(df_aggregated, per_query)
+
+        # Create one figure with N subplots (one per unique value)
+        fig, axes = plt.subplots(nrows=len(unique_subgroups), ncols=1, figsize=(width, 5 * len(unique_subgroups)))
+
+        # If there is only one subgroup, `axes` is a single Axes object instead of a list
+        if len(unique_subgroups) == 1:
+            axes = [axes]
+
+        # For each unique subgroup, filter the DataFrame and plot on a dedicated subplot
+        for i, subgroup_value in enumerate(unique_subgroups):
+            ax = axes[i]
+            subset_df = df_aggregated[df_aggregated[subplot_group] == subgroup_value]
+            # Pass in `ax` and a subplot title
+            create_plot(
+                subset_df,
+                group_column,
+                path,
+                per_query,
+                ax=ax,
+                subplot_title=f"{subplot_group} = {subgroup_value}",
+                # Name extension so CSV/PNG from each subplot is traceable if you want it
+                # but here we omit it so we do not re-save multiple times from create_plot
+                name_extension=""
+            )
+
+        plt.tight_layout()
+        final_plot_path = os.path.join(path, f"{group_column}_subplots_by_{subplot_group}.png")
+        plt.savefig(final_plot_path, bbox_inches='tight', pad_inches=0.1, dpi=300)
+        plt.close(fig)
+
+        return final_plot_path
+
+
+def get_plot_width(df: pd.DataFrame, per_query: bool) -> float:
+    if per_query:
+        # If per_query, the width is the number of queries times a fixed width per query
+        return len(df['query_index'].unique()) * 0.8
+    else:
+        # If not per_query, the width is the number of unique group_column values times a fixed width per value
+        return 8.0
+
+def create_plot(df_aggregated: pd.DataFrame,
+                group_column: str,
+                path: str,
+                per_query: bool,
+                name_extension: str = '',
+                ax: plt.Axes = None,
+                subplot_title: str = None
+               ) -> str:
+    """
+    Draws either a single bar plot or a grouped bar plot (depending on per_query).
+    If an `ax` (Axes) is provided, the plot is drawn on that subplot and no figure is saved.
+    Otherwise, this function creates its own figure and saves it as a PNG (and writes out a CSV).
+    """
+
+    if ax is None:
+        # We create a brand-new figure for a “standalone” plot
+        plt.close('all')  # defensive
+        width = get_plot_width(df_aggregated, per_query)
+        fig, ax = plt.subplots(figsize=(width, 5))
+        is_standalone = True
+    else:
+        # We are drawing into an existing subplot
+        is_standalone = False
+
+    # Convert to numeric if needed
+    df_aggregated['avg_runtime'] = pd.to_numeric(df_aggregated['avg_runtime'], errors='coerce')
+
+    if per_query:
+        # Grouped bar plot with query_index on the x-axis
         df_pivot = df_aggregated.pivot(
             index='query_index',
             columns='group_column_string',
@@ -137,21 +225,16 @@ def plot_aggregation(group_column: str, con: duckdb.DuckDBPyConnection, from_que
         ).reindex(columns=df_aggregated['group_column_string'].unique())
 
         x = np.arange(len(df_pivot.index))  # the label locations (one per query_index)
-        # Dynamically size the bar width based on the number of groups:
-        width = 0.8 / len(df_pivot.columns)
-
-        fig, ax = plt.subplots(figsize=(plot_width, 5))
+        width = 0.8 / len(df_pivot.columns)  # width of each sub-bar
         multiplier = 0
 
         for col_name in df_pivot.columns:
             offset = multiplier * width
-            # df_pivot[col_name] may contain NaN for missing data; matplotlib will skip those
             rects = ax.bar(x + offset, df_pivot[col_name], width, label=col_name)
-            # Add labels to each bar
             ax.bar_label(rects, padding=3, fmt='%.2f')
             multiplier += 1
 
-        # Center x-ticks across all sub-bars in a group
+        # X-ticks
         ax.set_xticks(x + width * (len(df_pivot.columns) - 1) / 2, df_pivot.index)
 
         ax.set_xlabel("Query Index")
@@ -159,39 +242,48 @@ def plot_aggregation(group_column: str, con: duckdb.DuckDBPyConnection, from_que
         ax.set_title(f'Average Runtime by Query Index grouped by {group_column}')
         ax.legend(loc='upper left')
 
-        # Save the plot
-        plot_path = os.path.join(path, f'{group_column}_grouped.png')
-        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1, dpi=300)
-
-        # Save the aggregated pivot table to CSV (wide format)
-        df_pivot.to_csv(os.path.join(path, f'{group_column}_grouped.csv'))
-        plt.close(fig)  # Close the figure to avoid memory issues with multiple plots
-
-        return plot_path
+        # If we’re a standalone figure, save plot & data
+        if is_standalone:
+            plot_path = os.path.join(path, f'{group_column}_per_query{name_extension}.png')
+            plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1, dpi=300)
+            # Save the data
+            df_pivot.to_csv(os.path.join(path, f'{group_column}_per_query{name_extension}.csv'))
+            plt.close(fig)
+            return plot_path
+        else:
+            # If we’re in a subplot, optionally set a subplot title
+            if subplot_title:
+                ax.set_title(subplot_title)
+            return ""  # not saving from here
 
     else:
-        # Standard single bar plot (no query grouping)
-        plt.figure(figsize=(plot_width, 5))
-        plt.bar(df_aggregated['group_column_string'], df_aggregated['avg_runtime'])
-        for i, v in enumerate(df_aggregated['avg_runtime']):
-            plt.text(i, v if not pd.isnull(v) else 0,
-                     str(round(v, 2)) if not pd.isnull(v) else 'nan',
-                     ha='center', va='bottom')
+        # A simple bar plot for the aggregated data
+        x_labels = df_aggregated['group_column_string']
+        y_values = df_aggregated['avg_runtime']
+        ax.bar(x_labels, y_values)
 
-        plt.xlabel(group_column)
-        plt.ylabel('Average Runtime')
-        plt.title(f'Average Runtime by {group_column}')
+        # Add labels on top of each bar
+        for i, v in enumerate(y_values):
+            label = 'nan' if pd.isnull(v) else f'{v:.2f}'
+            ax.text(i, 0 if pd.isnull(v) else v, label,
+                    ha='center', va='bottom')
 
-        # Save the plot
-        plot_path = os.path.join(path, f'{group_column}.png')
-        plt.tight_layout()
-        plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1)
+        ax.set_xlabel(group_column)
+        ax.set_ylabel('Average Runtime')
+        ax.set_title(f'Average Runtime by {group_column}')
 
-        # Also save the raw aggregated data
-        df_aggregated.to_csv(os.path.join(path, f'{group_column}.csv'), index=False)
-        plt.close()
+        if is_standalone:
+            plot_path = os.path.join(path, f'{group_column}{name_extension}.png')
+            plt.tight_layout()
+            plt.savefig(plot_path, bbox_inches='tight', pad_inches=0.1, dpi=300)
+            df_aggregated.to_csv(os.path.join(path, f'{group_column}{name_extension}.csv'), index=False)
+            plt.close(fig)
+            return plot_path
+        else:
+            if subplot_title:
+                ax.set_title(subplot_title)
+            return ""
 
-        return plot_path
 
 
 if __name__ == "__main__":
