@@ -49,6 +49,105 @@ def evaluate_run(run_name: str, con: duckdb.DuckDBPyConnection):
         evaluate_run_date(run_name, run_date, con)
 
 
+def system_dict_to_string(system_dict: dict[str, str]) -> str:
+    """
+    Convert a system dictionary to a string representation.
+    Example: {'name': 'SystemA', 'version': '1.0'} -> "SystemA (1.0)"
+    """
+    name = system_dict.get('name', 'Unknown')
+    if name == 'duckdb':
+        name = 'DuckDB'
+
+    version = system_dict.get('version', 'Unknown')
+
+    version = version.replace('-', ' ')
+    #capitalize the first letter of each word
+    version = ' '.join(word.capitalize() for word in version.split())
+    return f"{name} ({version})"
+
+def dict_to_string(d: dict[str, str]) -> str:
+    return str(d).replace('{', '').replace('}', '').replace("'", "").replace(': ', '=').replace(':', '=').replace(',', ', ')
+
+def eval_system_tuple(system_tuple: tuple[dict[str, str], dict[str, str]], con: duckdb.DuckDBPyConnection, from_query: str) -> str:
+    system_name_0 = system_dict_to_string(system_tuple[0])
+    system_name_1 = system_dict_to_string(system_tuple[1])
+    total_text = f"### {system_name_0} vs {system_name_1}\n"
+    # Per Query
+    total_text += eval_system_tuple_group(system_tuple, con, from_query, group_string='system_setting',
+                                          group_string_label='System Setting')
+    total_text += eval_system_tuple_group(system_tuple, con, from_query, group_string='data_config',
+                                          group_string_label='Data Configuration')
+
+    return total_text
+
+def eval_system_tuple_group(system_tuple: tuple[dict[str, str], dict[str, str]], con: duckdb.DuckDBPyConnection, from_query: str, group_string: str = 'data_config', group_string_label: str = 'Data Configuration') -> str:
+    system_name_0 = system_dict_to_string(system_tuple[0])
+    system_name_1 = system_dict_to_string(system_tuple[1])
+    text = f"##### Based on {group_string_label}\n"
+
+    # Per Scale Factor
+    query = f"""
+        SELECT 
+            CAST({group_string} AS STRING) as {group_string}_str, 
+            AVG(min_runtime) as avg_runtime
+        {from_query}
+        AND system = '{str(system_tuple[0]).replace("'", "''")}'
+        GROUP BY {group_string}
+        ORDER BY {group_string};
+    """
+    df_0 = con.execute(query).fetchdf()
+
+    query = f"""
+        SELECT
+            CAST({group_string} AS STRING) as {group_string}_str, 
+            AVG(min_runtime) as avg_runtime
+        {from_query}
+        AND system = '{str(system_tuple[1]).replace("'", "''")}'
+        GROUP BY {group_string}
+        ORDER BY {group_string};
+    """
+    df_1 = con.execute(query).fetchdf()
+    # Merge the two dataframes on group_string
+    group_string = group_string + '_str'
+    merged_df = pd.merge(df_0, df_1, on=group_string, suffixes=('_0', '_1'))
+    # Calculate the percentage difference
+    merged_df['percentage_diff'] = (merged_df['avg_runtime_0'] - merged_df['avg_runtime_1']) / merged_df['avg_runtime_1'] * 100
+    # Create a new dataframe with the desired columns
+    result_df = merged_df[[group_string, 'avg_runtime_0', 'avg_runtime_1', 'percentage_diff']]
+    # reformat the data_config column
+    result_df[group_string] = result_df[group_string].map(dict_to_string)
+    result_df['avg_runtime_0'] = result_df['avg_runtime_0'].map( lambda x: f"{x:.4f}s")
+    result_df['avg_runtime_1'] = result_df['avg_runtime_1'].map( lambda x: f"{x:.4f}s")
+    result_df['percentage_diff'] = result_df['percentage_diff'].map(lambda x: f"{x:.2f}%")
+    # Rename the columns
+    result_df.columns = [group_string_label, f'{system_name_0} Runtime', f'{system_name_1} Runtime', 'Percentage Difference']
+
+    # Convert the dataframe to a markdown table
+    text += result_df.to_markdown(index=False, floatfmt=".2f")
+    text += "\n\n"
+
+    return text
+
+
+def system_to_system_evaluation(con: duckdb.DuckDBPyConnection,
+                                from_query: str) -> str:
+    query = f"SELECT DISTINCT system {from_query}"
+    df = con.execute(query).fetchdf()
+
+    systems = df['system'].tolist()
+    # order the systems by name
+    systems.sort(key=lambda x: (x['name'], x['version']))
+    # create all combinations of systems
+
+    total_text = "\n## System to System Evaluation\n"
+
+    for i in range(len(systems)):
+        for j in range(i + 1, len(systems)):
+            total_text += eval_system_tuple((systems[i], systems[j]), con, from_query)
+
+    return total_text
+
+
 def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnection):
     # Step 1: Fetch initial data
     from_query = f"FROM intermediate WHERE run_name = '{run_name}' AND run_date = '{run_date}'"
@@ -62,8 +161,10 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
     df.to_csv(os.path.join(path, 'run.csv'), index=False)
 
     system_plot_grouped = plot_aggregation('system', con, from_query, plots_path, per_query=True)
-    system_plot_grouped_data_config = plot_aggregation('system', con, from_query, plots_path, per_query=True, subplot_group='data_config')
-    system_plot_grouped_system_setting = plot_aggregation('system', con, from_query, plots_path, per_query=True, subplot_group='system_setting')
+    system_plot_grouped_data_config = plot_aggregation('system', con, from_query, plots_path, per_query=True,
+                                                       subplot_group='data_config')
+    system_plot_grouped_system_setting = plot_aggregation('system', con, from_query, plots_path, per_query=True,
+                                                          subplot_group='system_setting')
     system_plot = plot_aggregation('system', con, from_query, plots_path)
 
     system_setting_plot_grouped = plot_aggregation('system_setting', con, from_query, plots_path, per_query=True)
@@ -71,8 +172,7 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
     data_plot_grouped = plot_aggregation('data_config', con, from_query, plots_path, per_query=True)
     data_plot = plot_aggregation('query', con, from_query, plots_path)
 
-
-
+    s2s_text = system_to_system_evaluation(con, from_query)
 
     # create little markdown file with embedded plots, we can create md images as ![name](path)
     md = f"""
@@ -85,8 +185,8 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
 ![System Setting](plots/{os.path.basename(system_setting_plot_grouped)})
 ## Performance per Data Configuration
 ![Data Configuration](plots/{os.path.basename(data_plot_grouped)})
-
-    """
+"""
+    md += s2s_text
     with open(os.path.join(path, 'Summary.md'), 'w') as f:
         f.write(md)
 
@@ -96,6 +196,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import duckdb
+
 
 def plot_aggregation(group_column: str,
                      con: duckdb.DuckDBPyConnection,
@@ -119,13 +220,14 @@ def plot_aggregation(group_column: str,
             replace(CAST({group_column} AS STRING)[2:-2], '''', '') as group_column_string
             {', (query_index + 1) as query_index' if per_query else ''},
             AVG(min_runtime) as avg_runtime
-            {', replace(CAST(' + subplot_group + " AS STRING)[2:-2], '''', '') as " + subplot_group if subplot_group else ''} 
+            {', replace(CAST(' + subplot_group + " AS STRING)[2:-2], '''', '') as " + subplot_group + '_str' if subplot_group else ''} 
         {from_query}
         GROUP BY {group_column} 
                  {', query_index' if per_query else ''} 
                  {(',' + subplot_group) if subplot_group else ''}
         ORDER BY {group_column} 
-                 {', query_index' if per_query else ''};
+                 {', query_index' if per_query else ''}
+                 {(',' + subplot_group) if subplot_group else ''};
     """
 
     # Execute and fetch data into a pandas DataFrame
@@ -145,7 +247,7 @@ def plot_aggregation(group_column: str,
         )
     else:
         # We have subgroups to plot in separate subplots
-        unique_subgroups = df_aggregated[subplot_group].unique()
+        unique_subgroups = df_aggregated[subplot_group + '_str'].unique()
 
         width = get_plot_width(df_aggregated, per_query)
 
@@ -159,7 +261,7 @@ def plot_aggregation(group_column: str,
         # For each unique subgroup, filter the DataFrame and plot on a dedicated subplot
         for i, subgroup_value in enumerate(unique_subgroups):
             ax = axes[i]
-            subset_df = df_aggregated[df_aggregated[subplot_group] == subgroup_value]
+            subset_df = df_aggregated[df_aggregated[subplot_group + '_str'] == subgroup_value]
             # Pass in `ax` and a subplot title
             create_plot(
                 subset_df,
@@ -189,6 +291,7 @@ def get_plot_width(df: pd.DataFrame, per_query: bool) -> float:
         # If not per_query, the width is the number of unique group_column values times a fixed width per value
         return 8.0
 
+
 def create_plot(df_aggregated: pd.DataFrame,
                 group_column: str,
                 path: str,
@@ -196,7 +299,7 @@ def create_plot(df_aggregated: pd.DataFrame,
                 name_extension: str = '',
                 ax: plt.Axes = None,
                 subplot_title: str = None
-               ) -> str:
+                ) -> str:
     """
     Draws either a single bar plot or a grouped bar plot (depending on per_query).
     If an `ax` (Axes) is provided, the plot is drawn on that subplot and no figure is saved.
@@ -283,7 +386,6 @@ def create_plot(df_aggregated: pd.DataFrame,
             if subplot_title:
                 ax.set_title(subplot_title)
             return ""
-
 
 
 if __name__ == "__main__":
