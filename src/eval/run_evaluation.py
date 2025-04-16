@@ -147,6 +147,21 @@ def system_to_system_evaluation(con: duckdb.DuckDBPyConnection,
 
     return total_text
 
+def query_index_to_name_table(con: duckdb.DuckDBPyConnection, from_query: str) -> str:
+    query = f"""
+        SELECT DISTINCT query_index, query
+        {from_query}
+        ORDER BY query_index;
+    """
+    df = con.execute(query).fetchdf()
+    # rename the columns
+    df.columns = ['Query Index', 'Query']
+    # Convert the dataframe to a markdown table
+    text = "\n## Query Index to Name Table\n"
+    text += df.to_markdown(index=False)
+    text += "\n\n"
+    return text
+
 
 def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnection):
     # Step 1: Fetch initial data
@@ -168,25 +183,36 @@ def evaluate_run_date(run_name: str, run_date: str, con: duckdb.DuckDBPyConnecti
     system_plot = plot_aggregation('system', con, from_query, plots_path)
 
     system_setting_plot_grouped = plot_aggregation('system_setting', con, from_query, plots_path, per_query=True)
+    system_setting_plot_grouped_by_system = plot_aggregation('system_setting', con, from_query, plots_path, per_query=True, subplot_group='system')
     system_setting_plot = plot_aggregation('system_name', con, from_query, plots_path)
     data_plot_grouped = plot_aggregation('data_config', con, from_query, plots_path, per_query=True)
     data_plot = plot_aggregation('query', con, from_query, plots_path)
 
     s2s_text = system_to_system_evaluation(con, from_query)
 
+
+
     # create little markdown file with embedded plots, we can create md images as ![name](path)
     md = f"""
 # {run_name} - {run_date}
+"""
+    md += s2s_text
+
+    md += query_index_to_name_table(con, from_query)
+
+    plots_md = f"""
 ## Performance per System and Data Configuration
 ![System](plots/{os.path.basename(system_plot_grouped_data_config)})
 ## Performance per System and System Configuration
-![System](plots/{os.path.basename(system_plot_grouped_system_setting)})
+![System](plots/{os.path.basename(system_setting_plot_grouped_by_system)})
 ## Performance per System Setting
 ![System Setting](plots/{os.path.basename(system_setting_plot_grouped)})
 ## Performance per Data Configuration
 ![Data Configuration](plots/{os.path.basename(data_plot_grouped)})
 """
-    md += s2s_text
+    # add the plots to the markdown
+    md += plots_md
+
     with open(os.path.join(path, 'Summary.md'), 'w') as f:
         f.write(md)
 

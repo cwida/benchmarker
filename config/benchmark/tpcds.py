@@ -46,7 +46,7 @@ def __generate_and_return_tpc_data(sfs: List[int]) -> List[DataSet]:
         duckdb_file_name_without_extension = os.path.splitext(os.path.basename(duckdb_file_path))[0]
 
         setup_script = {
-            'duckdb': f"ATTACH '{duckdb_file_path}' (READ_ONLY); USE '{duckdb_file_name_without_extension}';"
+            'duckdb': f"ATTACH '{duckdb_file_path}' (READ_ONLY); USE '{duckdb_file_name_without_extension}'; PRAGMA disable_progress_bar;"
         }
 
         dataset: DataSet = {

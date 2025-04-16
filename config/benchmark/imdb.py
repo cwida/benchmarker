@@ -64,7 +64,7 @@ def __load_and_return_imdb_data() -> List[DataSet]:
     duckdb_file_name_without_extension = os.path.splitext(os.path.basename(duckdb_file_path))[0]
 
     setup_script = {
-        'duckdb': f"ATTACH '{duckdb_file_path}' (READ_ONLY); USE '{duckdb_file_name_without_extension}';"
+        'duckdb': f"ATTACH '{duckdb_file_path}' (READ_ONLY); USE '{duckdb_file_name_without_extension}'; PRAGMA disable_progress_bar;"
     }
 
     dataset: DataSet = {

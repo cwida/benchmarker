@@ -66,7 +66,7 @@ class Query(TypedDict):
     name: str
     index: int
     run_script: Script
-
+    config: Dict[str, any] | None
 
 AWSEdgeTypes = Literal['generated', 'snap', 'all']
 ExperimentMode = Literal['train', 'test', 'all']

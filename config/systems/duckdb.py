@@ -36,8 +36,12 @@ def get_duckdb_runtime_and_cardinality(thread: int) -> Optional[Tuple[float, int
     with open(json_path, 'r') as f:
         profile = json.load(f)
 
+    if 'rows_returned' in profile:
+        # if the cumulative cardinality is present, use it
+        cardinality = profile['rows_returned']
+        runtime = profile['latency']
     # get the runtime, can be either in the timing or operator_timing field
-    if 'timing' in profile:
+    elif 'timing' in profile:
         runtime = profile['timing']
         cardinality = profile['children'][0]['children'][0]['cardinality']
     elif 'operator_timing' in profile:
@@ -234,9 +238,9 @@ DUCK_DB_WITHOUT_ATOMICS: System = {
 }
 
 
-DUCK_DB_PARTITIONED: System = {
+DUCK_DB_PARTITIONED_NO_ATOMICS: System = {
     **DUCK_DB_BUILD_100,
-    'version': 'partitioned-ht',
+    'version': 'partitioned-ht-no-atomics',
     'build_config': None,
     'build_config': {
         **DUCK_DB_BUILD_100['build_config'],
@@ -247,15 +251,16 @@ DUCK_DB_PARTITIONED: System = {
     },
 }
 
-DUCK_DB_PARTITIONED_BASELINE: System = {
+
+DUCK_DB_PARTITIONED_WITH_ATOMICS: System = {
     **DUCK_DB_BUILD_100,
-    'version': 'partitioned-ht-baseline',
+    'version': 'partitioned-ht-with-atomics',
     'build_config': None,
     'build_config': {
         **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
-            'github_url': 'https://github.com/gropaul/duckdb/tree/join/increase-entries-per-task-for-parallel-zero'
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/partitioned-build/v3'
         },
     },
 }

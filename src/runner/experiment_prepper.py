@@ -60,6 +60,17 @@ def create_experiments_from_config(
                         experiments.append(experiment)
                         index += 1
 
+    n_benchmarks = len(benchmarks)
+    n_datasets = len(benchmarks[0]['datasets']) if benchmarks else 0
+    n_queries = len(benchmarks[0]['queries']) if benchmarks else 0
+    n_systems = len(systems)
+    n_system_settings = len(system_settings)
+    n_experiments = len(experiments)
+
+    logger.info(f"Created {n_benchmarks} benchmarks, {n_datasets} datasets, {n_queries} queries, {n_systems} systems, and {n_system_settings} system settings")
+    logger.info(f"Total number of experiments: {n_experiments}")
+
+
     offset = run_settings['offset']
     if offset is None:
         offset = 0
