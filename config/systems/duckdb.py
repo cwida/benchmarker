@@ -241,7 +241,6 @@ DUCK_DB_WITHOUT_ATOMICS: System = {
 DUCK_DB_PARTITIONED_NO_ATOMICS: System = {
     **DUCK_DB_BUILD_100,
     'version': 'partitioned-ht-no-atomics',
-    'build_config': None,
     'build_config': {
         **DUCK_DB_BUILD_100['build_config'],
         'location': {
@@ -255,7 +254,6 @@ DUCK_DB_PARTITIONED_NO_ATOMICS: System = {
 DUCK_DB_PARTITIONED_WITH_ATOMICS: System = {
     **DUCK_DB_BUILD_100,
     'version': 'partitioned-ht-with-atomics',
-    'build_config': None,
     'build_config': {
         **DUCK_DB_BUILD_100['build_config'],
         'location': {
@@ -268,12 +266,72 @@ DUCK_DB_PARTITIONED_WITH_ATOMICS: System = {
 DUCK_DB_OPTIONAL_PROBE_SEL: System = {
     **DUCK_DB_BUILD_100,
     'version': 'optional-probe-sel',
-    'build_config': None,
     'build_config': {
         **DUCK_DB_BUILD_100['build_config'],
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join/optional-probe-sel'
+        },
+    },
+}
+
+
+DUCK_DB_STRING_EQUALITY_V1: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'better-equality',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/strings/better-equality'
+        },
+    },
+}
+
+DUCK_DB_STRING_EQUALITY_BASELINE: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'better-equality-baseline',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/strings/baseline'
+        },
+    },
+}
+
+DUCK_DB_VALIDITY_DISABLED: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'validity-disabled',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/betterRowLayout/noValidityChecks'
+        },
+    },
+}
+
+DUCK_DB_VALIDITY_V1: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'validity-v1',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/betterRowLayout/v1'
+        },
+    },
+}
+
+DUCK_DB_VALIDITY_BASELINE: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'validity-baseline',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/betterRowLayout/baseline'
         },
     },
 }

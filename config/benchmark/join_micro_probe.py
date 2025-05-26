@@ -178,6 +178,8 @@ def get_join_micro_probe_benchmark() -> Benchmark:
                         'duplicates': duplicates,
                         'probe_cardinality': JOIN_PROBE_CARDINALITY,
                         'expected_cardinality': config.expected_cardinality,
+                        'build_table_query': b_query,
+                        'probe_table_query': p_query,
                     },
                 }
                 queries.append(query)
