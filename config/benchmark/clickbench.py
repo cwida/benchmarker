@@ -36,6 +36,7 @@ def __get_clickbench_queries() -> List[Query]:
     clickbench_sql_dir = __get_clickbench_sql_file_path()
     clickbench_queries_path = os.path.join(clickbench_sql_dir, 'queries')
 
+
     queries = []
     for file in os.listdir(clickbench_queries_path):
         if file.endswith('.sql'):

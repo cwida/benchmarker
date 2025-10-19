@@ -28,7 +28,7 @@ def run(config: RunConfig):
 
     run_experiments(experiments, run_settings)
 
-    run_evaluation()
+    run_evaluation(config['name'])
 
 
 def run_experiments(experiments: List[Experiment], settings: RunSettingsInternal):

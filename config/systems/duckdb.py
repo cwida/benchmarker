@@ -335,3 +335,76 @@ DUCK_DB_VALIDITY_BASELINE: System = {
         },
     },
 }
+
+
+DUCK_DB_BF_BASELINE: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bf-baseline',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/main'
+        },
+    },
+}
+
+DUCK_DB_BF_V1: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bf-v1',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf'
+        },
+    },
+}
+
+DUCK_DB_EARLY_PROBING: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'early-probing',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/early-probing-clean'
+        },
+    },
+}
+
+DUCK_DB_BF_RPT: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bf-rpt',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/YimingQiao/duckdb/tree/predicate-transfer-PR'
+        },
+    },
+}
+
+DUCK_DB_ROW_MATCHER_OPTIONAL_NULL: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'optional-null',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/betterRowLayout/rowMatcherOptionalNullCheck'
+        },
+    },
+}
+
+DUCK_DB_ROW_MATCHER_BASELINE: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'baseline',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/betterRowLayout/baseline'
+        },
+    },
+}

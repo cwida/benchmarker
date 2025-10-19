@@ -2,11 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_output/systems/duckdb-baseline" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_output/systems/duckdb-baseline/build/release/_deps/httpfs_extension_fc-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_output/systems/duckdb-lp-join" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_output/systems/duckdb-lp-join-no-salt" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_output/systems/duckdb-lp-join-no-salt/build/release/_deps/httpfs_extension_fc-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/_output/systems/duckdb-lp-join/build/release/_deps/httpfs_extension_fc-src" vcs="Git" />
   </component>
 </project>

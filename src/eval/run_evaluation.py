@@ -7,7 +7,7 @@ from src.utils import EXPERIMENT_RUNS_PATH, RESULTS_PATH
 import numpy as np
 
 
-def run_evaluation():
+def run_evaluation(experiment_path: str = "*"):
     runs_path = EXPERIMENT_RUNS_PATH
     con = duckdb.connect(':memory:')
 
@@ -24,7 +24,7 @@ def run_evaluation():
                 {{'name': system_name, 'version': system_version}} as system,
                 experiment.system_setting as system_setting,
                 list_min(runtimes) as min_runtime
-            FROM '{runs_path}/*/*/*.json'
+            FROM '{runs_path}/{experiment_path}/*/*.json'
         );"""
     con.execute(view_query)
 
