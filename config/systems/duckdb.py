@@ -348,7 +348,6 @@ DUCK_DB_BF_BASELINE: System = {
         },
     },
 }
-
 DUCK_DB_BF_V1: System = {
     **DUCK_DB_BUILD_100,
     'version': 'bf-v1',
@@ -357,6 +356,18 @@ DUCK_DB_BF_V1: System = {
         'location': {
             'location': 'github',
             'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf'
+        },
+    },
+}
+
+DUCK_DB_BF_X86: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bf-x86',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf-x86-v1'
         },
     },
 }
