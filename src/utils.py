@@ -1,11 +1,11 @@
-import json
 import os
 import sys
-
-from src.models import System, Experiment
-
 root_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.insert(0, root_directory)
+
+
+import json
+from src.models import System, Experiment
 
 from pathlib import Path
 

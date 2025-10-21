@@ -1,14 +1,13 @@
 import os
 import sys
 
+
 root_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.insert(0, root_directory)
 
 import duckdb
-import pandas as pd
-import matplotlib.pyplot as plt
+
 from src.utils import EXPERIMENT_RUNS_PATH, RESULTS_PATH
-import numpy as np
 
 
 def run_evaluation(experiment_path: str = "*"):
