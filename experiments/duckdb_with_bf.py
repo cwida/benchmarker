@@ -30,7 +30,7 @@ def main():
             # {'n_threads': 10},
         ],
         'systems': [DUCK_DB_BF_V1,  DUCK_DB_BF_X86, DUCK_DB_BF_BASELINE, DUCK_DB_BF_RPT],
-        'benchmarks': [get_tpch_benchmark(sfs)] ,
+        'benchmarks': [get_imdb_benchmark()] ,
     }
     run(config)
 
