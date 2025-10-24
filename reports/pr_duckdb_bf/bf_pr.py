@@ -3,7 +3,7 @@ import duckdb
 
 def create_pr_plots():
 
-    runs_dir = '/Users/paul/workspace/benchmarker/_output/runs/duckdb_with_bf_micro/2025-10-17-17-06-23'
+    runs_dir = '/Users/paul/workspace/benchmarker/_output/runs/duckdb_with_bf_micro/2025-10-23-15-16-50'
 
     jsons = duckdb.sql(f"""
         WITH data AS (
@@ -20,7 +20,7 @@ def create_pr_plots():
             USING AVG(runtime) AS runtime
         ) 
         SELECT 
-            selectivity, probe_cardinality, "bf-baseline_runtime" / "bf-v1_runtime" as speedup 
+            selectivity, probe_cardinality, "bf-baseline_runtime" / "bf-x86_runtime" as speedup 
         FROM p
         ORDER BY probe_cardinality, selectivity
         

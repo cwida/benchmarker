@@ -16,7 +16,7 @@ from src.runner.experiment_runner import run
 
 
 def main():
-    sfs = [10]
+    sfs = [3]
     config: RunConfig = {
         'name': str(os.path.basename(__file__)).split('.')[0],
         'run_settings': {
@@ -29,8 +29,8 @@ def main():
             {'n_threads': 8},
             # {'n_threads': 10},
         ],
-        'systems': [DUCK_DB_BF_V1,  DUCK_DB_BF_X86, DUCK_DB_BF_BASELINE, DUCK_DB_BF_RPT],
-        'benchmarks': [get_imdb_benchmark()] ,
+        'systems': [DUCK_DB_BF_BASELINE, DUCK_DB_BF_V1,  DUCK_DB_BF_X86],
+        'benchmarks': [get_tpcds_benchmark(sfs)] ,
     }
     run(config)
 
