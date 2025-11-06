@@ -1,6 +1,8 @@
 import os
 import sys
 
+from config.benchmark.join_micro_join_selectivity import get_join_micro_probe_sel_benchmark
+from config.benchmark.later_materialization import get_micro_late_materialization
 
 root_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.insert(0, root_directory)
@@ -11,13 +13,14 @@ from config.benchmark.tpcds import get_tpcds_benchmark
 
 from config.systems.duckdb import DUCK_DB_BF_BASELINE, DUCK_DB_BF_V1, DUCK_DB_BF_X86, DUCK_DB_BF_X86_CM, \
     DUCK_DB_EARLY_PROBING, \
-    DUCK_DB_BF_RPT, DUCK_DB_BF_X86_CM_SEL_OPT
+    DUCK_DB_BF_RPT, DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_BLOOM_FILTER, \
+    DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_IN_FILTER, DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_DISABLED, \
+    DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_MIN_MAX
 from src.models import RunConfig
 from src.runner.experiment_runner import run
 
 
 def main():
-    max_cores = os.cpu_count()
     sfs = [10]
     config: RunConfig = {
         'name': str(os.path.basename(__file__)).split('.')[0],
@@ -28,14 +31,17 @@ def main():
         'system_settings': [
             # {'n_threads': 2},
             # {'n_threads': 4},
-            # {'n_threads': 8},
-            {'n_threads': max_cores},
+            {'n_threads': 8},
             # {'n_threads': 10},
         ],
-        'systems': [DUCK_DB_BF_BASELINE, DUCK_DB_BF_X86_CM_SEL_OPT],
-        'benchmarks': [get_tpcds_benchmark(sfs)] ,
+        'systems': [DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_DISABLED,
+                    DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_IN_FILTER,
+                    DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_BLOOM_FILTER,
+                    DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_MIN_MAX],
+        'benchmarks': [get_micro_late_materialization()],
     }
     run(config)
+
 
 if __name__ == "__main__":
     main()

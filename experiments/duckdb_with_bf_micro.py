@@ -21,6 +21,7 @@ def main():
         'system_settings': [
             # {'n_threads': 1},
             # {'n_threads': 4},
+            {'n_threads': 1},
             {'n_threads': 8},
         ],
         'systems': [DUCK_DB_BF_X86, DUCK_DB_BF_BASELINE],

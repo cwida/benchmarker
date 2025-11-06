@@ -372,6 +372,34 @@ DUCK_DB_BF_X86: System = {
     },
 }
 
+DUCK_DB_BF_X86_CM: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bf-x86-compressed-materialization',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf-x86-v1-compressed-materialization'
+        },
+    },
+}
+
+
+
+
+
+DUCK_DB_BF_X86_CM_SEL_OPT: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bf-x86-compressed-materialization-sel-opt',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf-x86-v1-compressed-materialization-sel-opt'
+        },
+    },
+}
+
 DUCK_DB_EARLY_PROBING: System = {
     **DUCK_DB_BUILD_100,
     'version': 'early-probing',
@@ -418,4 +446,58 @@ DUCK_DB_ROW_MATCHER_BASELINE: System = {
             'github_url': 'https://github.com/gropaul/duckdb/tree/betterRowLayout/baseline'
         },
     },
+}
+
+
+DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_DISABLED: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'late-materialization-disabled',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf-x86-v1-compressed-materialization'
+        },
+    },
+    'setup_script': 'PRAGMA disable_progress_bar; SET late_materialization_max_rows = 0;',
+}
+
+
+DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_IN_FILTER: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'in-filter',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/join/bf-x86-v1-compressed-materialization'
+        },
+    },
+    'setup_script': 'PRAGMA disable_progress_bar; SET late_materialization_max_rows = 1000000;SET dynamic_or_filter_threshold = 1000000;',
+}
+
+DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_BLOOM_FILTER: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'bloom-filter',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/commit/2eba72468b545f242fcc0ca37b6939b0debf0e4d'
+        },
+    },
+    'setup_script': 'PRAGMA disable_progress_bar; SET late_materialization_max_rows = 1000000;SET dynamic_or_filter_threshold = 0;',
+}
+
+DUCK_DB_BF_BASELINE_LATE_MATERIALIZATION_MIN_MAX: System = {
+    **DUCK_DB_BUILD_100,
+    'version': 'min-max-filter',
+    'build_config': {
+        **DUCK_DB_BUILD_100['build_config'],
+        'location': {
+            'location': 'github',
+            'github_url': 'https://github.com/gropaul/duckdb/tree/main'
+        },
+    },
+    'setup_script': 'PRAGMA disable_progress_bar; SET late_materialization_max_rows = 1000000;SET dynamic_or_filter_threshold = 0;',
 }

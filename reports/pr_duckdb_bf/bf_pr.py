@@ -3,7 +3,7 @@ import duckdb
 
 def create_pr_plots():
 
-    runs_dir = '/Users/paul/workspace/benchmarker/_output/runs/duckdb_with_bf_micro/2025-10-23-15-16-50'
+    runs_dir = '/Users/paul/workspace/benchmarker/_output/runs/duckdb_with_bf_micro/2025-10-24-13-11-36'
 
     jsons = duckdb.sql(f"""
         WITH data AS (

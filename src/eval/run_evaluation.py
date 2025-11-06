@@ -22,12 +22,13 @@ def run_evaluation(experiment_path: str = "*"):
                 experiment.data.config as data_config,
                 experiment.query.name as query,
                 experiment.query.index as query_index,
+                -- experiment.query.config as query_config,
                 experiment.system.name as system_name,
                 experiment.system.version as system_version,
                 {{'name': system_name, 'version': system_version}} as system,
                 experiment.system_setting as system_setting,
                 list_min(runtimes) as min_runtime
-            FROM '{runs_path}/{experiment_path}/*/*.json'
+            FROM read_json('{runs_path}/{experiment_path}/*/*.json', union_by_name =  True)
         );"""
     con.execute(view_query)
 
@@ -100,6 +101,7 @@ def eval_system_tuple_group(system_tuple: tuple[dict[str, str], dict[str, str]],
     """
     df_0 = con.execute(query).fetchdf()
 
+
     query = f"""
         SELECT
             CAST({group_string} AS STRING) as {group_string}_str, 
@@ -128,6 +130,8 @@ def eval_system_tuple_group(system_tuple: tuple[dict[str, str], dict[str, str]],
     # Convert the dataframe to a markdown table
     text += result_df.to_markdown(index=False, floatfmt=".2f")
     text += "\n\n"
+
+    # get the
 
     return text
 
